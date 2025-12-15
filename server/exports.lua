@@ -1,15 +1,18 @@
 -- Export functions for external resources
+-- Usage: exports.gangwar:functionName(args)
 
 -- Get all territories owned by a gang
 local function getTerritoriesByGang(gangId)
     local territories = {}
-    for territoryId, territory in pairs(TerritoryControl) do
-        if territory.owner == gangId then
-            table.insert(territories, {
-                id = territoryId,
-                owner = gangId,
-                lastUpdate = territory.lastUpdate,
-            })
+    if TerritoryControl then
+        for territoryId, territory in pairs(TerritoryControl) do
+            if territory.owner == gangId then
+                table.insert(territories, {
+                    id = territoryId,
+                    owner = gangId,
+                    lastUpdate = territory.lastUpdate,
+                })
+            end
         end
     end
     return territories
@@ -52,16 +55,18 @@ end
 
 -- Get all territories
 local function getAllTerritories()
-    return TerritoryControl
+    return TerritoryControl or {}
 end
 
--- Register exports
-Exports('getTerritoriesByGang', getTerritoriesByGang)
-Exports('startWar', startWar)
-Exports('endWar', endWar)
-Exports('addKill', addKill)
-Exports('captureTerritory', captureTerritory)
-Exports('getGangStats', getGangStats)
-Exports('getWarStatus', getWarStatus)
-Exports('getPlayerStats', getPlayerStats)
-Exports('getAllTerritories', getAllTerritories)
+-- Register exports using lowercase 'exports' table
+exports('getTerritoriesByGang', getTerritoriesByGang)
+exports('startWar', startWar)
+exports('endWar', endWar)
+exports('addKill', addKill)
+exports('captureTerritory', captureTerritory)
+exports('getGangStats', getGangStats)
+exports('getWarStatus', getWarStatus)
+exports('getPlayerStats', getPlayerStats)
+exports('getAllTerritories', getAllTerritories)
+
+print('^2[Gangwar] Exports registered^7')
