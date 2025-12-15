@@ -32,13 +32,17 @@ local function ExecuteQuery(query, params, callback)
     end
 
     if DBType == 'oxmysql' then
-        MySQL.execute(query, params or {}, function(result)
+        -- oxmysql.execute(query, params, callback)
+        local function paramCallback(result)
             if callback then callback(result) end
-        end)
+        end
+        MySQL.execute(query, params or {}, paramCallback)
     elseif DBType == 'mysql-async' then
-        MySQL.execute(query, params or {}, function(result)
+        -- mysql-async.execute(query, params, callback)
+        local function paramCallback(result)
             if callback then callback(result) end
-        end)
+        end
+        MySQL.execute(query, params or {}, paramCallback)
     elseif DBType == 'qbcore' then
         local QBCore = exports['qb-core']:GetObject()
         QBCore.Functions.ExecuteSql(false, query, params or {}, function(result)
@@ -47,20 +51,65 @@ local function ExecuteQuery(query, params, callback)
     end
 end
 
--- Create tables if they don't exist
+-- Create tables - without parameters
 local function CreateTables()
-    local statements = {
-        'CREATE TABLE IF NOT EXISTS gangwar_wars (id INT PRIMARY KEY AUTO_INCREMENT, attacker_gang VARCHAR(50) NOT NULL, defender_gang VARCHAR(50) NOT NULL, start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, end_time TIMESTAMP NULL, winner VARCHAR(50), status VARCHAR(20) DEFAULT "active", INDEX idx_status (status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-        'CREATE TABLE IF NOT EXISTS gangwar_territories (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100) NOT NULL, zone VARCHAR(50), owner VARCHAR(50), captured_at TIMESTAMP, INDEX idx_owner (owner)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-        'CREATE TABLE IF NOT EXISTS gangwar_stats (id INT PRIMARY KEY AUTO_INCREMENT, player_id INT NOT NULL, gang_id VARCHAR(50), kills INT DEFAULT 0, deaths INT DEFAULT 0, territories_captured INT DEFAULT 0, money_earned BIGINT DEFAULT 0, last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY player_gang (player_id, gang_id), INDEX idx_player_id (player_id), INDEX idx_gang_id (gang_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-        'CREATE TABLE IF NOT EXISTS gangwar_gangs (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100) NOT NULL UNIQUE, label VARCHAR(20), color VARCHAR(7), balance BIGINT DEFAULT 0, headquarters JSON, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX idx_name (name)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
-    }
+    -- Table 1: Wars
+    ExecuteQuery([[CREATE TABLE IF NOT EXISTS gangwar_wars (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        attacker_gang VARCHAR(50) NOT NULL,
+        defender_gang VARCHAR(50) NOT NULL,
+        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        end_time TIMESTAMP NULL,
+        winner VARCHAR(50),
+        status VARCHAR(20) DEFAULT 'active',
+        INDEX idx_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]], {}, function()
+        print('^2[Gangwar] Wars table ready^7')
+    end)
 
-    for _, statement in ipairs(statements) do
-        ExecuteQuery(statement, {}, function(result)
-            -- Tables created or already exist
-        end)
-    end
+    -- Table 2: Territories
+    ExecuteQuery([[CREATE TABLE IF NOT EXISTS gangwar_territories (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL,
+        zone VARCHAR(50),
+        owner VARCHAR(50),
+        captured_at TIMESTAMP,
+        INDEX idx_owner (owner)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]], {}, function()
+        print('^2[Gangwar] Territories table ready^7')
+    end)
+
+    -- Table 3: Stats
+    ExecuteQuery([[CREATE TABLE IF NOT EXISTS gangwar_stats (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        player_id INT NOT NULL,
+        gang_id VARCHAR(50),
+        kills INT DEFAULT 0,
+        deaths INT DEFAULT 0,
+        territories_captured INT DEFAULT 0,
+        money_earned BIGINT DEFAULT 0,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY player_gang (player_id, gang_id),
+        INDEX idx_player_id (player_id),
+        INDEX idx_gang_id (gang_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]], {}, function()
+        print('^2[Gangwar] Stats table ready^7')
+    end)
+
+    -- Table 4: Gangs
+    ExecuteQuery([[CREATE TABLE IF NOT EXISTS gangwar_gangs (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        label VARCHAR(20),
+        color VARCHAR(7),
+        balance BIGINT DEFAULT 0,
+        headquarters JSON,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_name (name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]], {}, function()
+        print('^2[Gangwar] Gangs table ready^7')
+    end)
+
     print('^2[Gangwar] Database tables initialized^7')
 end
 
