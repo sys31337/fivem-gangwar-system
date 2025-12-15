@@ -1,7 +1,7 @@
 -- Export functions for external resources
 
 -- Get all territories owned by a gang
-function exports.getTerritoriesByGang(gangId)
+local function getTerritoriesByGang(gangId)
     local territories = {}
     for territoryId, territory in pairs(TerritoryControl) do
         if territory.owner == gangId then
@@ -16,41 +16,52 @@ function exports.getTerritoriesByGang(gangId)
 end
 
 -- Start a war
-function exports.startWar(attackerGang, defenderGang)
+local function startWar(attackerGang, defenderGang)
     return StartWar(attackerGang, defenderGang)
 end
 
 -- End current war
-function exports.endWar()
+local function endWar()
     return EndWar()
 end
 
 -- Add kill to stats
-function exports.addKill(playerId, killerId)
+local function addKill(playerId, killerId)
     return AddKill(playerId, killerId)
 end
 
 -- Capture territory
-function exports.captureTerritory(gangId, territoryId)
+local function captureTerritory(gangId, territoryId)
     return CaptureTerritory(gangId, territoryId)
 end
 
 -- Get gang statistics
-function exports.getGangStats(gangId)
+local function getGangStats(gangId)
     return GetGangStats(gangId)
 end
 
 -- Get current war status
-function exports.getWarStatus()
+local function getWarStatus()
     return GetWarStatus()
 end
 
 -- Get all player stats
-function exports.getPlayerStats(playerId)
+local function getPlayerStats(playerId)
     return PlayerStats[playerId] or {}
 end
 
 -- Get all territories
-function exports.getAllTerritories()
+local function getAllTerritories()
     return TerritoryControl
 end
+
+-- Register exports
+Exports('getTerritoriesByGang', getTerritoriesByGang)
+Exports('startWar', startWar)
+Exports('endWar', endWar)
+Exports('addKill', addKill)
+Exports('captureTerritory', captureTerritory)
+Exports('getGangStats', getGangStats)
+Exports('getWarStatus', getWarStatus)
+Exports('getPlayerStats', getPlayerStats)
+Exports('getAllTerritories', getAllTerritories)

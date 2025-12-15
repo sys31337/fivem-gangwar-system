@@ -1,5 +1,5 @@
-local Config = require('shared.config')
-local Locales = require('shared.locales')
+-- Core gangwar system functions
+-- Config is available globally from shared_scripts
 
 -- Start a war between two gangs
 function StartWar(attackerGang, defenderGang)
@@ -8,12 +8,12 @@ function StartWar(attackerGang, defenderGang)
     end
     
     if CurrentWar then
-        return {success = false, message = Locales['en'].already_in_war}
+        return {success = false, message = 'War already in progress'}
     end
     
     -- Check minimum players
     local playerCount = GetNumPlayerIndices()
-    if playerCount < Config.War.minPlayersRequired then
+    if playerCount < (Config.War.minPlayersRequired or 2) then
         return {success = false, message = 'Not enough players'}
     end
     
@@ -37,7 +37,7 @@ function StartWar(attackerGang, defenderGang)
     TriggerEvent('gangwar:warStarted', CurrentWar.id, attackerGang, defenderGang)
     TriggerClientEvent('gangwar:warStarted', -1, CurrentWar)
     
-    print(string.format(Locales['en'].war_started, attackerGang, defenderGang))
+    print(string.format('[Gangwar] War started: %s vs %s', attackerGang, defenderGang))
     
     return {success = true, war = CurrentWar}
 end
@@ -58,7 +58,7 @@ function EndWar()
     TriggerEvent('gangwar:warEnded', CurrentWar.id, winner)
     TriggerClientEvent('gangwar:warEnded', -1, winner)
     
-    print(string.format(Locales['en'].war_ended, winner))
+    print(string.format('[Gangwar] War ended! Winner: %s', winner))
     
     local warData = CurrentWar
     CurrentWar = nil

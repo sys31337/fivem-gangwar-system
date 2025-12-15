@@ -1,4 +1,6 @@
-local Config = require('shared.config')
+-- FiveM Gangwar System - Client Main
+-- Config and Locales are loaded via shared_scripts in fxmanifest.lua
+
 local PlayerGang = nil
 local InWar = false
 local CurrentWar = nil

@@ -32,16 +32,16 @@ local function ExecuteQuery(query, params, callback)
     end
 
     if DBType == 'oxmysql' then
-        MySQL.execute(query, params, function(result)
+        MySQL.execute(query, params or {}, function(result)
             if callback then callback(result) end
         end)
     elseif DBType == 'mysql-async' then
-        MySQL.execute(query, params, function(result)
+        MySQL.execute(query, params or {}, function(result)
             if callback then callback(result) end
         end)
     elseif DBType == 'qbcore' then
         local QBCore = exports['qb-core']:GetObject()
-        QBCore.Functions.ExecuteSql(false, query, params, function(result)
+        QBCore.Functions.ExecuteSql(false, query, params or {}, function(result)
             if callback then callback(result) end
         end)
     end
@@ -50,47 +50,10 @@ end
 -- Create tables if they don't exist
 local function CreateTables()
     local statements = {
-        [[CREATE TABLE IF NOT EXISTS gangwar_wars (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            attacker_gang VARCHAR(50) NOT NULL,
-            defender_gang VARCHAR(50) NOT NULL,
-            start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            end_time TIMESTAMP NULL,
-            winner VARCHAR(50),
-            status VARCHAR(20) DEFAULT 'active',
-            INDEX idx_status (status)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]],
-        [[CREATE TABLE IF NOT EXISTS gangwar_territories (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            name VARCHAR(100) NOT NULL,
-            zone VARCHAR(50),
-            owner VARCHAR(50),
-            captured_at TIMESTAMP,
-            INDEX idx_owner (owner)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]],
-        [[CREATE TABLE IF NOT EXISTS gangwar_stats (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            player_id INT NOT NULL,
-            gang_id VARCHAR(50),
-            kills INT DEFAULT 0,
-            deaths INT DEFAULT 0,
-            territories_captured INT DEFAULT 0,
-            money_earned BIGINT DEFAULT 0,
-            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY player_gang (player_id, gang_id),
-            INDEX idx_player_id (player_id),
-            INDEX idx_gang_id (gang_id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]],
-        [[CREATE TABLE IF NOT EXISTS gangwar_gangs (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            name VARCHAR(100) NOT NULL UNIQUE,
-            label VARCHAR(20),
-            color VARCHAR(7),
-            balance BIGINT DEFAULT 0,
-            headquarters JSON,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_name (name)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]]
+        'CREATE TABLE IF NOT EXISTS gangwar_wars (id INT PRIMARY KEY AUTO_INCREMENT, attacker_gang VARCHAR(50) NOT NULL, defender_gang VARCHAR(50) NOT NULL, start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, end_time TIMESTAMP NULL, winner VARCHAR(50), status VARCHAR(20) DEFAULT "active", INDEX idx_status (status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+        'CREATE TABLE IF NOT EXISTS gangwar_territories (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100) NOT NULL, zone VARCHAR(50), owner VARCHAR(50), captured_at TIMESTAMP, INDEX idx_owner (owner)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+        'CREATE TABLE IF NOT EXISTS gangwar_stats (id INT PRIMARY KEY AUTO_INCREMENT, player_id INT NOT NULL, gang_id VARCHAR(50), kills INT DEFAULT 0, deaths INT DEFAULT 0, territories_captured INT DEFAULT 0, money_earned BIGINT DEFAULT 0, last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY player_gang (player_id, gang_id), INDEX idx_player_id (player_id), INDEX idx_gang_id (gang_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+        'CREATE TABLE IF NOT EXISTS gangwar_gangs (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100) NOT NULL UNIQUE, label VARCHAR(20), color VARCHAR(7), balance BIGINT DEFAULT 0, headquarters JSON, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX idx_name (name)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
     }
 
     for _, statement in ipairs(statements) do
