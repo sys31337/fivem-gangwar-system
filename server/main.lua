@@ -1,18 +1,24 @@
-local Config = require('shared.config')
-local Locales = require('shared.locales')
+-- FiveM Gangwar System - Server Main
+-- This script requires: fxmanifest.lua, shared/config.lua, shared/locales.lua
+
+-- Import shared data (accessed via shared_scripts in fxmanifest.lua)
+-- Config and Locales are automatically available in the global scope
+
 local CurrentWar = nil
 local PlayerStats = {}
 local TerritoryControl = {}
 
--- Initialize territories
-for _, territory in ipairs(Config.Territories) do
-    TerritoryControl[territory.id] = {
-        owner = territory.owner,
-        capturing = false,
-        capturingGang = nil,
-        captureProgress = 0,
-        lastUpdate = GetGameTimer(),
-    }
+-- Initialize territories from config
+if Config and Config.Territories then
+    for _, territory in ipairs(Config.Territories) do
+        TerritoryControl[territory.id] = {
+            owner = territory.owner,
+            capturing = false,
+            capturingGang = nil,
+            captureProgress = 0,
+            lastUpdate = GetGameTimer(),
+        }
+    end
 end
 
 -- NUI Callback: Get war status
