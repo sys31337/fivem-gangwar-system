@@ -1,8 +1,5 @@
 -- FiveM Gangwar System - Server Main
--- This script requires: fxmanifest.lua, shared/config.lua, shared/locales.lua
-
--- Import shared data (accessed via shared_scripts in fxmanifest.lua)
--- Config and Locales are automatically available in the global scope
+-- Config and Locales are loaded via shared_scripts in fxmanifest.lua
 
 local CurrentWar = nil
 local PlayerStats = {}
@@ -21,41 +18,35 @@ if Config and Config.Territories then
     end
 end
 
--- NUI Callback: Get war status
-RegisterNuiCallback('getWarStatus', function(data, cb)
-    cb({
-        war = CurrentWar,
-        territories = TerritoryControl,
-        playerStats = PlayerStats,
-    })
+-- Server event: Start war from client
+AddEventHandler('gangwar:server:startWar', function(attackerGang, defenderGang)
+    local result = StartWar(attackerGang, defenderGang)
+    TriggerClientEvent('gangwar:client:warStarted', source, result)
+    BroadcastWarUpdate()
 end)
 
--- NUI Callback: Start war
-RegisterNuiCallback('startWar', function(data, cb)
-    local result = StartWar(data.attackerGang, data.defenderGang)
-    cb(result)
-end)
-
--- NUI Callback: End war
-RegisterNuiCallback('endWar', function(data, cb)
+-- Server event: End war from client
+AddEventHandler('gangwar:server:endWar', function()
     local result = EndWar()
-    cb(result)
+    TriggerClientEvent('gangwar:client:warEnded', source, result)
+    BroadcastWarUpdate()
 end)
 
--- NUI Callback: Update player stats
-RegisterNuiCallback('updatePlayerStats', function(data, cb)
-    UpdatePlayerStats(data.playerId, data.kills, data.deaths)
-    cb({success = true})
+-- Server event: Update player stats
+AddEventHandler('gangwar:server:updatePlayerStats', function(playerId, kills, deaths)
+    UpdatePlayerStats(playerId, kills, deaths)
+    BroadcastPlayerStats()
 end)
 
--- NUI Callback: Capture territory
-RegisterNuiCallback('captureTerritory', function(data, cb)
-    local result = CaptureTerritory(data.gangId, data.territoryId)
-    cb(result)
+-- Server event: Capture territory
+AddEventHandler('gangwar:server:captureTerritory', function(gangId, territoryId)
+    local result = CaptureTerritory(gangId, territoryId)
+    TriggerClientEvent('gangwar:client:territoryCaptured', source, result)
+    BroadcastWarUpdate()
 end)
 
 -- Server event: Player joined
-AddEventHandler('playerJoined', function()
+AddEventHandler('playerJoining', function()
     local playerId = source
     PlayerStats[playerId] = {
         playerId = playerId,
@@ -71,7 +62,7 @@ AddEventHandler('playerDropped', function()
     PlayerStats[playerId] = nil
 end)
 
--- Broadcast war updates
+-- Broadcast war updates to all clients
 function BroadcastWarUpdate()
     TriggerClientEvent('gangwar:updateWar', -1, {
         war = CurrentWar,
@@ -79,17 +70,14 @@ function BroadcastWarUpdate()
     })
 end
 
--- Broadcast player stats
+-- Broadcast player stats to all clients
 function BroadcastPlayerStats()
     TriggerClientEvent('gangwar:updateStats', -1, PlayerStats)
 end
 
--- Update NUI with latest data
-function UpdateNUI(data)
-    SendNuiMessage(json.encode({
-        type = 'updateWarData',
-        data = data,
-    }))
-end
+-- Global variables for command access
+_G.CurrentWar = CurrentWar
+_G.PlayerStats = PlayerStats
+_G.TerritoryControl = TerritoryControl
 
 print('^2[Gangwar System] Server started successfully^7')
