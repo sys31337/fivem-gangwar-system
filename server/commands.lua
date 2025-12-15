@@ -1,5 +1,3 @@
-local Config = require('shared.config')
-
 -- Admin command: Start war
 RegisterCommand('startwar', function(source, args, rawCommand)
     local attacker = args[1]
@@ -68,4 +66,9 @@ RegisterCommand('warstatus', function(source, args, rawCommand)
         args = {'War Status', json.encode(war)},
         color = {0, 255, 0}
     })
+end, false)
+
+-- Command: Open gangwar UI
+RegisterCommand('gangwar', function(source, args, rawCommand)
+    TriggerClientEvent('gangwar:openUI', source)
 end, false)
